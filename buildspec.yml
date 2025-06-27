@@ -2,30 +2,44 @@ version: 0.2
 
 env:
   parameter-store:
-    DOCKER_REGISTRY_USERNAME: /myapp/docker-credentials/username
-    DOCKER_REGISTRY_PASSWORD: /myapp/docker-credentials/password
-    DOCKER_REGISTRY_URL: /myapp/docker-registry/url
+    DOCKER_USERNAME: /myapp/aws-ci-project/docker-credentials/username
+    DOCKER_PASSWORD: /myapp/docker/password
+    DOCKER_REPO: /myapp/docker/repository
+
 phases:
   install:
     runtime-versions:
       python: 3.11
+    commands:
+      - echo "Installing AWS CLI v2..."
+      - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+      - unzip awscliv2.zip
+      - sudo ./aws/install --update
+
   pre_build:
     commands:
-      - echo "Installing dependencies..."
-      - pip install -r day-13/simple-python-app/requirements.txt
+      - echo "Installing Python dependencies..."
+      - pip install -r requirements.txt
+      - echo "Logging in to Docker Hub..."
+      - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin docker.io
+
   build:
     commands:
-      - echo "Running tests..."
-      - cd day-13/simple-python-app/
       - echo "Building Docker image..."
-      - echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
-      - docker build -t "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/simple-python-flask-app:latest" .
-      - docker push "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/simple-python-flask-app:latest"
+      - docker build -t "$DOCKER_REPO:latest" .
+      - echo "Tagging image..."
+      - docker tag "$DOCKER_REPO:latest" "$DOCKER_USERNAME/aws-ci-project:latest"
+      - echo "Pushing to Docker Hub..."
+      - docker push "$DOCKER_USERNAME/aws-ci-project:latest"
+
   post_build:
     commands:
-      - echo "Build completed successfully!"
+      - echo "Cleaning up..."
+      - docker logout
+      - echo "Build completed! Image pushed to:"
+      - echo "https://hub.docker.com/r/$DOCKER_USERNAME/aws-ci-project"
+
 artifacts:
   files:
     - '**/*'
-  base-directory: ../simple-python-app
-
+  discard-paths: yes
