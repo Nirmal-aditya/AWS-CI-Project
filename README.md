@@ -26,12 +26,16 @@
 ---
 
 ## ⚙️ Setup & Installation Guide
+
 git clone https://github.com/Nirmal-aditya/AWS-CI-Project.git
-Step 2: Navigate to the project directory
-cd AWS-CI-Project
-Step 3: Review the buildspec.yml and Dockerfile for build configuration
-Step 4: Push code changes to trigger the AWS CodeBuild pipeline configured in AWS Console
-Step 5: Monitor builds in AWS CodeBuild and check Docker image build status
+
+Navigate to the project directory: cd AWS-CI-Project
+
+Review the buildspec.yml and Dockerfile for build configuration
+
+Push code changes to trigger the AWS CodeBuild pipeline configured in AWS Console
+
+Monitor builds in AWS CodeBuild and check Docker image build status
 
 
 ---
